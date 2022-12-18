@@ -2,11 +2,10 @@ const file_system = require('fs');
 const archiver = require('archiver');
 const prompt = require('prompt-sync')();
 const zipCurrDir = (dir, name, vol) => {
-    console.log('Starting zipping process for directory: ' + dir + ' for name: ' + name + ' and vol: ' + vol);
+    console.log(`Starting zipping process for directory: ${dir}${name}\\${vol}`);
     
-    const outputFileName = '第' + vol + '巻';
-    const outputFileDirName = dir + name + '\\' + outputFileName;
-    const sourceFileDirName = dir + name + '\\' + outputFileName;
+    const outputFileDirName = dir + name + '\\' + vol;
+    const sourceFileDirName = dir + name + '\\' + vol;
     const output = file_system.createWriteStream(outputFileDirName + '.zip');
     const archive = archiver('zip');
     
@@ -29,6 +28,36 @@ const zipCurrDir = (dir, name, vol) => {
     });
 }
 
+const exceptions = []
+
+const dirCrawler = (baseDir, dirAppend = '', level = 0) => {
+    const readingDir = `${baseDir}\\${dirAppend}`;
+    const dirents = file_system.readdirSync(readingDir, {withFileTypes: true});
+    dirents.forEach(dirent => {
+        const res = `${readingDir}${dirent.name}`;
+        if (level == 0) {
+            dirCrawler(baseDir, dirent.name, 1);
+        } else if (dirAppend) {
+            var volName = dirent.name;
+            // console.log(`baseDir: ${baseDir} - name: ${dirAppend} - fileName: ${volName}`);
+            const volNumBeg = volName.indexOf('第');
+            const volNumEnd = volName.indexOf('巻');
+            if (volNumBeg >= 0 & volNumEnd >= 0  & ((volNumEnd - volNumBeg) == 3)) {
+                volName = `第${volName.substring(volNumBeg + 1, volNumEnd)}巻`;
+                // console.log(`Zipping ${baseDir}\\${dirAppend}\\${volName} into  ${baseDir}\\${dirAppend}\\第${volParam}巻`);
+            } else {
+                // console.log(`Exception found for ${baseDir}\\${dirAppend}\\${volName}`);
+                exceptions.push(`${baseDir}\\${dirAppend}\\${volName}`);
+            }
+            zipCurrDir(baseDir, dirAppend, volName);
+        }
+    });
+    if (level == 0) {
+        console.log('EXCEPTIONS');
+        console.log(exceptions);
+    }
+}
+
 const processParams = () => {
     console.log(process.argv);
     if (process.argv.length < 2) {
@@ -49,5 +78,6 @@ const processParams = () => {
     }
 }
 
-zipCurrDir('C:\\Users\\zacho\\OneDrive\\Documents\\MangaCopy\\', 'EX-ARM エクスアーム', '03');
+// zipCurrDir('C:\\Users\\zacho\\OneDrive\\Documents\\MangaCopy\\', 'EX-ARM エクスアーム', '03');
+dirCrawler('C:\\Users\\zacho\\OneDrive\\Documents\\MangaCopy\\');
 // processParams();
