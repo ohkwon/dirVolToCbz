@@ -1,7 +1,9 @@
 const file_system = require('fs');
 const archiver = require('archiver');
-const prompt = require('prompt-sync')();
-const zipCurrDir = (dir, vol, run = false) => {
+// const prompt = require('prompt-sync')();
+const deasync = require('deasync');
+
+const zipCurrDir = (dir, vol, run) => {
     console.log(`Starting zipping process for directory: ${dir}${vol}`);
     console.log(`run: ${run}`)
     if (! run) {
@@ -31,6 +33,15 @@ const zipCurrDir = (dir, vol, run = false) => {
     });
 }
 
+const zipCurrDirDeasync = deasync((dir, vol, run, cb) => {
+    try {
+        zipCurrDir(dir, vol, run);
+    } catch (error) {
+        cb(error, null);
+    }
+    cb(null, true);
+});
+
 const exceptions = []
 
 const dirCrawler = (baseDir, level = 0, run = false) => {
@@ -48,10 +59,10 @@ const dirCrawler = (baseDir, level = 0, run = false) => {
             if (volNumBeg >= 0 & volNumEnd >= 0  & ((volNumEnd - volNumBeg) == 3)) {
                 volName = `第${volName.substring(volNumBeg + 1, volNumEnd)}巻`;
             } else {
-                // console.log(`Exception found for ${baseDir}${volName}`);
+                console.log(`Exception found for ${baseDir}${volName}`);
                 exceptions.push(`${baseDir}${volName}`);
             }
-            zipCurrDir(baseDir, volName, run);
+            zipCurrDirDeasync(baseDir, volName, run);
         }
     });
     if (level == 0) {

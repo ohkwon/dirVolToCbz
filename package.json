@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "archiver": "^5.3.1",
+    "deasync": "^0.1.28",
     "prompt-sync": "^4.2.0"
   }
 }
