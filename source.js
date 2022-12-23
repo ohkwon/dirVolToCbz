@@ -3,14 +3,14 @@ const archiver = require('archiver');
 // const prompt = require('prompt-sync')();
 const deasync = require('deasync');
 
-const zipCurrDir = (dir, vol, run) => {
+const zipCurrDir = (dir, sourceVolName, vol, run) => {
     console.log(`Starting zipping process for directory: ${dir}${vol}`);
     console.log(`run: ${run}`)
     if (! run) {
         return;
     }
     const outputFileDirName = dir + vol;
-    const sourceFileDirName = dir + vol;
+    const sourceFileDirName = dir + sourceVolName;
     const output = file_system.createWriteStream(outputFileDirName + '.zip');
     const archive = archiver('zip');
     
@@ -33,9 +33,9 @@ const zipCurrDir = (dir, vol, run) => {
     });
 }
 
-const zipCurrDirDeasync = deasync((dir, vol, run, cb) => {
+const zipCurrDirDeasync = deasync((dir, sourceVolName, vol, run, cb) => {
     try {
-        zipCurrDir(dir, vol, run);
+        zipCurrDir(dir, sourceVolName, vol, run);
     } catch (error) {
         cb(error, null);
     }
@@ -43,6 +43,7 @@ const zipCurrDirDeasync = deasync((dir, vol, run, cb) => {
 });
 
 const exceptions = []
+var toggle = 1;
 
 const dirCrawler = (baseDir, level = 0, run = false) => {
     const readingDir = baseDir;
@@ -62,7 +63,7 @@ const dirCrawler = (baseDir, level = 0, run = false) => {
                 console.log(`Exception found for ${baseDir}${volName}`);
                 exceptions.push(`${baseDir}${volName}`);
             }
-            zipCurrDirDeasync(baseDir, volName, run);
+            zipCurrDirDeasync(baseDir, dirent.name, volName, run);
         }
     });
     if (level == 0) {
