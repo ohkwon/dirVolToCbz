@@ -92,14 +92,14 @@ const processParams = () => {
             zipCurrDir(dir, vol, run);
             break;
         case 'convertWholeDir':
-            if (process.argv.length < 4) {
+            if (process.argv.length < 3) {
                 console.log('Error please provide root directory of entire comic store.');
             } else {
-                const baseDir = process.argv[3];
-                var run = false;
-                if (process.argv.length == 5 & process.argv[4] == 'run=true') {
-                    run = true;
-                }
+                const baseDir = 'C:\\Users\\zacho\\OneDrive\\Documents\\MangaCopy\\';
+                var run = true;
+                // if (process.argv.length == 4 & process.argv[3] == 'run=true') {
+                //     run = true;
+                // }
                 console.log('Converting whole store' + (run ? '' : ' as test'));
                 dirCrawler(baseDir, 0, run);
             }
